@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rebecca and Marco's Sarlat scavenger hunt</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0e6d2; /* Sandstone color */
+            color: #4a3b31; /* Dark brown text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #d4c8b0;
+        }
+
+        h1, h2 {
+            color: #8c6b4f; /* Muted brown for headings */
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.8em;
+        }
+        h2 {
+            font-size: 1.4em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #6b5b4b;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #8c6b4f;
+            outline: none;
+        }
+
+        button {
+            background-color: #a07e5f; /* Earthy button color */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 10px; /* Added margin for better spacing for all buttons */
+        }
+        button:hover {
+            background-color: #8c6b4f; /* Darker on hover */
+        }
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Shared paragraph styling for question and tourist info */
+        #question-container p, #tourist-info-container p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: left; 
+        }
+        
+        #image-hint-container {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        #image-hint-container img {
+            max-width: 100%; 
+            height: auto;
+            border-radius: 6px;
+            border: 1px solid #ddd; 
+            display: block; 
+            margin-left: auto; 
+            margin-right: auto;
+        }
+
+        #question-container .directions-text {
+            font-style: italic;
+            color: #7a6a5a;
+            font-size: 0.95em;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            color: #c0392b; /* Red for errors */
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        /* Styling for win screen and the new tourist info screen */
+        #win-screen, #tourist-info-screen { 
+            padding: 30px;
+            background-color: #e8f5e9; /* Light green for success/info */
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+        }
+        #win-screen h2, #tourist-info-screen h2 { 
+            color: #2e7d32; /* Dark green */
+        }
+        #win-screen p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        #win-screen .passphrase {
+            font-weight: bold;
+            font-size: 1.3em;
+            color: #1b5e20; /* Darker green for passphrase */
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #c8e6c9;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Style for tourist info paragraph */
+        #tourist-info-text {
+            margin-bottom: 20px; 
+            font-size: 1em;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+         footer {
+            margin-top: 30px;
+            font-size: 0.8em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="start-screen">
+            <h1>Rebecca and Marco's Sarlat scavenger hunt</h1>
+            <label for="group-code">Enter your Group Code:</label>
+            <input type="text" id="group-code" placeholder="e.g., TeamFantastic">
+            <button onclick="startGame()">Start Hunt!</button>
+            <p id="start-error-message" class="error-message hidden"></p>
+        </div>
+
+        <div id="question-screen" class="hidden">
+            <h2 id="question-number"></h2>
+            <div id="question-container">
+                <p id="directions-element" class="directions-text"></p>
+                <p id="question-text"></p>
+                <div id="image-hint-container">
+                    <img id="hint-image-element" src="" alt="Image Hint" style="display: none;">
+                </div>
+            </div>
+            <label for="answer">Your Answer:</label>
+            <input type="text" id="answer" placeholder="Type your answer here">
+            <button onclick="checkAnswer()">Submit Answer</button>
+            <p id="answer-error-message" class="error-message hidden"></p>
+        </div>
+
+        <div id="tourist-info-screen" class="hidden">
+            <h2 id="tourist-info-title">Correct!</h2>
+            <div id="tourist-info-container">
+                <p id="tourist-info-text"></p>
+            </div>
+            <button onclick="continueToNextQuestion()">Continue</button>
+        </div>
+
+        <div id="win-screen" class="hidden">
+            <h2>Congratulations!</h2>
+            <p>You've successfully completed the Sarlat Scavenger Hunt!</p>
+            <p>Show this passphrase to the game master:</p>
+            <p class="passphrase">SARLAT EXPLORER</p>
+        </div>
+    </div>
+    <footer>A Sarlat Adventure Game</footer>
+
+    <script>
+        // Game Data: Questions, Directions, Answers, Image Hint Placeholders, and Tourist Info
+        const allQuestions = [
+            {
+                directions: "First, locate the tall, rocket-shaped stone tower known as the Lanterne des Morts (Lantern of the Dead), usually found behind the Cathedral. Stand directly in front of the Lanterne des Morts' small doorway, then turn so your back is to the doorway. Follow the path that goes off to your right to rejoin a main street. Head downhill on this street. Find the building in the picture",
+                question: "What is the name of the special house next to it with the red doors and window frames?",
+                answers: ["Maison de La Boetie", "Maison La Boetie", "La Boetie House", "Boetie House", "Maison de la Boétie", "Hotel de La Boetie"],
+                imageHint: ".",
+                touristInfo: "The Maison de La Boétie, located at Place du Peyrou, is one of Sarlat's most iconic buildings and a remarkable example of Renaissance architecture with Italian influences. It was constructed between 1520 and 1525 by Antoine de La Boétie, a lieutenant criminel (a judicial officer) in Sarlat. This is the birthplace of his son, the renowned humanist writer and philosopher Étienne de La Boétie, who was born here on November 1, 1530. The façade of the house is a particular highlight, richly decorated with ornamental carvings and large, mullioned windows framed by pilasters. The first floor was considered the noble floor, where the owner would live and receive guests. While the interior has seen changes over the centuries, it still retains some original features, including a Renaissance fireplace. A unique feature is Étienne's Chamber, where the contemporary artist Arno Fabre inscribed the walls with text from La Boétie's famous work, Discourse on Voluntary Servitude, in 2010. The house was classified as a historical monument in 1889 and has undergone restorations, with a significant one planned for completion in summer 2025, to preserve its architectural and historical integrity."
+            },
+            {
+                directions: "Find the Fontaine Sainte-Marie. It's a historic fountain, somewhat tucked away, often found by heading from Place de la Liberté towards the side of the covered market, looking for a small square or recess with a spring.",
+                question: "Look closely at the back of the fountain. What small something is placed deep inside on the back wall?",
+                answers: ["statue", "figurine", "figure" , "saint", "virgin mary", "virgin", "statue of virgin mary", "figurine of virgin mary"], 
+                imageHint:".",
+                touristInfo: "The Fontaine Sainte-Marie is an intriguing historical site nestled in a natural grotto, located near the Sainte-Marie Church (now the covered market). This 12th-century fountain was a vital source of water for the inhabitants of Sarlat for centuries. Legend suggests that the original abbey around which Sarlat developed was built near this spring.The fountain remained in use until the 18th century, when its water reportedly became undrinkable or contaminated. The grotto and the fountain were largely forgotten or inaccessible for a period but were rediscovered and reopened in the late 1960s during the extensive restoration of Sarlat's historic center, spearheaded by André Malraux. Today, it stands as a picturesque and somewhat hidden reminder of the town's medieval origins and the essential role of water sources in urban development."
+            },
+            {
+                directions: "Position yourself in the main market square (Place de la Liberté). Scan the northern edge of the square, looking up at the buildings. You are searching for a bronze statue of a man casually sitting on a wall, seemingly observing the market below. This is The Onlooker.",
+                question: "Once you've found him, line yourself up with his view. Very close to where he is perched there is a shop that has been named in his honor. What is the full name of this shop?",
+                answers: ["La Boutique du Badaud", "Boutique du Badaud", "Le Badaud Boutique"],
+                imageHint:".",
+                touristInfo: "Le Badaud de Sarlat, or The Onlooker, is a popular contemporary bronze sculpture located in the heart of Sarlat, often seen overlooking the Place de la Liberté or nearby market areas. Created by the sculptor Gérard Auliac in 2002, the statue depicts a young man, or boy, casually sitting on a wall or ledge, observing the passersby and the lively scenes of the town. The term badaud in French traditionally refers to a Parisian idler or a curious onlooker, someone who enjoys watching the street life. This statue captures that spirit perfectly, and its placement allows it to seemingly engage with the daily life of Sarlat. It has quickly become a beloved and frequently photographed landmark, adding a touch of modern artistry and whimsy to the historic setting. The Onlooker serves as a charming symbol, perhaps reflecting the experience of the many visitors who come to Sarlat to soak in its atmosphere and observe its timeless beauty.",
+            },
+            {
+                directions: "Near where the bus dropped us off to the north is a treelined parking lot. In it is a statue of Etienne de la Boetie",
+                question: "What is he holding in his hand?",
+                answers: ["book", "feather" , "paper" , "quill" , "scroll" , "feather and book" , "pen" , "feather and paper" , "pen and paper" ],
+                imageHint:".",
+                touristInfo: "Étienne de La Boétie (1530-1563) was a highly influential French humanist writer, poet, and political theorist, born in Sarlat. He is considered a key figure of the French Renaissance and an embodiment of the 'Sarlat Spirit' of humanism. Orphaned at a young age, he was raised by his uncle and went on to study law at the prestigious University of Orléans. He later became a magistrate in the Parlement of Bordeaux. La Boétie is most famous for his seminal work, the 'Discours de la servitude volontaire' (Discourse on Voluntary Servitude), a powerful essay questioning why populations submit to the rule of tyrants. Although there's some debate about when exactly he wrote it (Montaigne suggested he was as young as 16 or 18), it remains a significant piece of political philosophy. His close and profound friendship with Michel de Montaigne, another giant of French literature and philosophy, is also legendary. Montaigne paid tribute to their bond in his 'Essais'. La Boétie died young, at the age of 32, but his ideas on liberty, consent, and resistance to oppression have resonated through centuries and continue to be studied. In Sarlat, besides his birthplace (Maison de La Boétie), a statue of him by Tony Noël was erected in 1892 on the Place de la Grande Rigaudie.",
+            },
+            {
+                directions: "Go to the Place de la Liberté and find the large building with the giant, modern steel doors. This is the former Sainte-Marie Church, now the covered market.",
+                question: "Walk around this building. High up on this facade, there is one unique, prominent window that is different from the others. What is the geometric shape of this specific window?",
+                answers: ["circle", "round", "circular", "oculus"],
+                imageHint:".",
+                touristInfo: "The Place de la Liberté is the vibrant heart of Sarlat and has been a central public space for centuries. The market held here has roots dating back to medieval times and continues to be a focal point for both locals and tourists. The square is surrounded by beautifully preserved medieval and Renaissance buildings, creating a stunning backdrop for the bustling market activity. The market takes place year-round. On Saturday mornings, the Place de la Liberté and surrounding streets fill with stalls selling a wide variety of local produce, including the Périgord region's famous delicacies like foie gras, truffles, walnuts, and confit de canard (duck confit), as well as cheeses, wines, and fresh produce. A smaller food market also occurs on Wednesday mornings in the Place de la Liberté. The Saturday market often extends throughout the day along the Rue de la République with general traders. This tradition of gathering to trade local goods has been a constant throughout Sarlat's long history, making the market a living link to its past."
+            }
+        ];
+
+        let shuffledQuestions = [];
+        let currentQuestionIndex = 0;
+        let randomSeed = 1; // Seed for PRNG
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const winScreen = document.getElementById('win-screen');
+        const touristInfoScreen = document.getElementById('tourist-info-screen'); 
+        const groupCodeInput = document.getElementById('group-code');
+        const questionNumberText = document.getElementById('question-number');
+        const questionText = document.getElementById('question-text');
+        const directionsElement = document.getElementById('directions-element');
+        const hintImageElement = document.getElementById('hint-image-element');
+        const answerInput = document.getElementById('answer');
+        const startErrorMessage = document.getElementById('start-error-message');
+        const answerErrorMessage = document.getElementById('answer-error-message');
+        const touristInfoTextElement = document.getElementById('tourist-info-text'); 
+
+        /**
+         * Converts a string to a numeric seed.
+         * @param {string} str - The input string (group code).
+         * @returns {number} A numeric seed.
+         */
+        function stringToSeed(str) {
+            let hash = 0;
+            if (str.length === 0) return 1; 
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return Math.abs(hash); 
+        }
+
+        /**
+         * Sets the seed for the pseudo-random number generator.
+         * @param {number} seedValue - The seed value.
+         */
+        function setSeed(seedValue) {
+            randomSeed = seedValue;
+        }
+
+        /**
+         * Generates a pseudo-random number based on the current seed.
+         * @returns {number} A float between 0 (inclusive) and 1 (exclusive).
+         */
+        function seededRandom() {
+            randomSeed = (randomSeed * 9301 + 49297) % 233280;
+            return randomSeed / 233280;
+        }
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates algorithm with a seeded PRNG.
+         * @param {Array} array - The array to shuffle.
+         */
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(seededRandom() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        /**
+         * Starts the game: validates group code, shuffles questions, and displays the first question.
+         */
+        function startGame() {
+            const groupCode = groupCodeInput.value.trim();
+            if (groupCode === "") {
+                startErrorMessage.textContent = "Please enter a group code to begin.";
+                startErrorMessage.classList.remove('hidden');
+                return;
+            }
+            startErrorMessage.classList.add('hidden');
+
+            const seed = stringToSeed(groupCode);
+            setSeed(seed);
+
+            shuffledQuestions = [...allQuestions];
+            shuffleArray(shuffledQuestions);
+            
+            currentQuestionIndex = 0;
+            startScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden'); // Show question screen
+            winScreen.classList.add('hidden');
+            touristInfoScreen.classList.add('hidden'); // Ensure tourist info is hidden at start
+            displayQuestion();
+        }
+
+        /**
+         * Displays the current question, directions, and the image hint.
+         */
+        function displayQuestion() {
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                const questionData = shuffledQuestions[currentQuestionIndex];
+                questionNumberText.textContent = `Question ${currentQuestionIndex + 1} of ${shuffledQuestions.length}`;
+                questionText.textContent = questionData.question;
+                directionsElement.textContent = "Directions: " + questionData.directions; 
+                
+                // Display the image hint
+                if (questionData.imageHint && questionData.imageHint.startsWith("data:image")) {
+                    hintImageElement.src = questionData.imageHint;
+                    hintImageElement.alt = "Hint for: " + questionData.question.substring(0, 50) + "...";
+                    hintImageElement.style.display = 'block';
+                } else if (questionData.imageHint === "BASE64 HERE") {
+                    // If it's the placeholder, show a default placeholder image
+                    hintImageElement.src = "https://placehold.co/400x300/eee/ccc?text=Image+Hint"; 
+                    hintImageElement.alt = "Image hint placeholder";
+                    hintImageElement.style.display = 'block';
+                } else {
+                    // No valid image hint or placeholder
+                    hintImageElement.src = ""; 
+                    hintImageElement.alt = ""; 
+                    hintImageElement.style.display = 'none';
+                }
+
+                answerInput.value = ''; 
+                answerErrorMessage.classList.add('hidden'); 
+                answerInput.focus();
+            } else {
+                // No more questions, show the win screen
+                showWinScreen();
+            }
+        }
+
+        /**
+         * Checks the user's answer. If correct, shows tourist info. If incorrect, shows error.
+         */
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            if (userAnswer === "") {
+                answerErrorMessage.textContent = "Please enter an answer.";
+                answerErrorMessage.classList.remove('hidden');
+                return;
+            }
+
+            const currentQuestionData = shuffledQuestions[currentQuestionIndex];
+            const correctAnswers = currentQuestionData.answers.map(ans => ans.toLowerCase());
+
+            if (correctAnswers.includes(userAnswer)) {
+                answerErrorMessage.classList.add('hidden');
+                showTouristInfoScreen(); // Show tourist info screen
+            } else {
+                answerErrorMessage.textContent = "Not quite! Try that again, check your spelling, or look closer.";
+                answerErrorMessage.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Displays the tourist information screen for the current question.
+         */
+        function showTouristInfoScreen() {
+            const questionData = shuffledQuestions[currentQuestionIndex];
+            questionScreen.classList.add('hidden'); // Hide question screen
+            touristInfoTextElement.textContent = questionData.touristInfo || "No additional information available for this location.";
+            touristInfoScreen.classList.remove('hidden'); // Show tourist info screen
+        }
+
+        /**
+         * Hides tourist info, increments question index, and displays the next question or win screen.
+         */
+        function continueToNextQuestion() {
+            touristInfoScreen.classList.add('hidden'); // Hide the tourist info screen
+            currentQuestionIndex++; // Increment to the next question
+
+            // If there are more questions, make the question screen visible before displaying the next question.
+            // Otherwise, displayQuestion() will handle calling showWinScreen().
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                questionScreen.classList.remove('hidden'); // *** BUG FIX: Make the question screen visible again ***
+            }
+            
+            displayQuestion(); // Display the next question or trigger win screen
+        }
+        
+        // Event listener for Enter key in answer input
+        answerInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                checkAnswer();
+            }
+        });
+        
+        // Event listener for Enter key in group code input
+        groupCodeInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                startGame();
+            }
+        });
+
+        /**
+         * Displays the win screen.
+         */
+        function showWinScreen() {
+            questionScreen.classList.add('hidden'); // Hide question screen
+            touristInfoScreen.classList.add('hidden'); // Ensure tourist info is hidden if game ends
+            winScreen.classList.remove('hidden'); // Show win screen
+        }
+
+    </script>
+</body>
+</html>
